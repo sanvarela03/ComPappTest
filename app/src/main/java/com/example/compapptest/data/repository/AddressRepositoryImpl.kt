@@ -3,6 +3,7 @@ package com.example.compapptest.data.repository
 import android.util.Log
 import com.example.compapptest.config.common.ApiResponse
 import com.example.compapptest.config.common.apiRequestFlow
+import com.example.compapptest.data.local.dao.AddressDao
 import com.example.compapptest.data.local.dao.CustomerDao
 import com.example.compapptest.data.local.entities.AddressEntity
 import com.example.compapptest.data.remote.api.AddressApi
@@ -22,24 +23,30 @@ import javax.inject.Singleton
 
 @Singleton
 class AddressRepositoryImpl @Inject constructor(
-    private val api: AddressApi,
-    private val dao: CustomerDao,
+    private val addressApi: AddressApi,
+    private val addressDao: AddressDao,
+    private val customerDao: CustomerDao,
     private val tokenManager: TokenManager
 ) : AddressRepository {
     override suspend fun addNewAddress(addressRequest: AddressRequest): Flow<ApiResponse<MessageResponse>> {
-        return apiRequestFlow { api.addAddress(addressRequest) }
+        return apiRequestFlow { addressApi.addAddress(addressRequest) }
     }
 
     override suspend fun updateAddress(updateAddressRequest: UpdateAddressRequest): Flow<ApiResponse<MessageResponse>> {
         Log.d("AddressRepositoryImpl", "updateAddressRequest =$updateAddressRequest")
+        val userId = tokenManager.getUserId().first()
         return apiRequestFlow {
-            api.updateAddress(updateAddressRequest)
+            addressApi.updateAddress(
+                userId = userId ?: -1L,
+                addressId = updateAddressRequest.id,
+                updateAddressRequest = updateAddressRequest
+            )
         }
     }
 
     override suspend fun deleteAddress(addressId: Long): Flow<ApiResponse<MessageResponse>> {
         return apiRequestFlow {
-            api.deleteAddress(addressId)
+            addressApi.deleteAddress(addressId)
         }
     }
 
@@ -50,7 +57,7 @@ class AddressRepositoryImpl @Inject constructor(
             emit(ApiResponse.Loading)
             val userId = tokenManager.getUserId().first()
             userId?.let {
-                val customerWithAddress = dao.getCustomerAndAddress(userId)
+                val customerWithAddress = customerDao.getCustomerAndAddress(userId)
 
                 Log.d("manzana", "customerWithAddress = $customerWithAddress")
 
@@ -67,32 +74,55 @@ class AddressRepositoryImpl @Inject constructor(
                     return@flow
                 }
 
-                val remote = getRemote(it)
+//                val remote = getRemote(it)
 
+                val remoteTest = apiRequestFlow { addressApi.getAllAddress(it) }
 
-                remote?.let { addresesResponse ->
-                    dao.clearAddressEntity()
-                    val remoteAddresses = addresesResponse
+                remoteTest.collect { response ->
+                    when (response) {
+                        ApiResponse.Waiting -> {}
+                        ApiResponse.Loading -> {}
+                        is ApiResponse.Failure -> {
+                            emit(response)
+                        }
 
-                    remoteAddresses.forEach {
-                        Log.d("AddressRepositoryImpl", "getAllAddresses | insert : $it")
-                        dao.insertAddress(it.toAddressEntity())
+                        is ApiResponse.Success -> {
+                            addressDao.clearAddressEntity()
+                            val remoteAddresses = response.data.map { it.toAddressEntity() }
+                            addressDao.insertAllAddress(remoteAddresses)
+                            val localAddresses = addressDao.getAllAddressesByUserId(userId)
+
+                            if (localAddresses != null) {
+                                emit(ApiResponse.Success(localAddresses))
+                            }
+                        }
                     }
-
-                    val addresses = dao.getAllAddresses()
-
-                    Log.d("Addresses", "addresses $addresses")
-                    val newCustomerWithAddress = dao.getCustomerAndAddress(userId)
-                    Log.d("Addresses", "addresses $newCustomerWithAddress")
-                    Log.d("Addresses", "customer and address : ${dao.getCustomerAndAddressTest()}")
-
-                    newCustomerWithAddress.let {
-                        val newLocalAddresses = newCustomerWithAddress[0].addressList
-                        emit(ApiResponse.Success(newLocalAddresses))
-                    }
-
-
                 }
+
+//                remote?.let { addresesResponse ->
+//                    customerDao.clearAddressEntity()
+//                    val remoteAddresses = addresesResponse
+//
+//                    remoteAddresses.forEach {
+//                        Log.d("AddressRepositoryImpl", "getAllAddresses | insert : $it")
+//                        customerDao.insertAddress(it.toAddressEntity())
+//                    }
+//
+//                    val addresses = customerDao.getAllAddresses()
+//
+//                    Log.d("Addresses", "addresses $addresses")
+//                    val newCustomerWithAddress = customerDao.getCustomerAndAddress(userId)
+//                    Log.d("Addresses", "addresses $newCustomerWithAddress")
+//                    Log.d(
+//                        "Addresses",
+//                        "customer and address : ${customerDao.getCustomerAndAddressTest()}"
+//                    )
+//
+//                    newCustomerWithAddress.let {
+//                        val newLocalAddresses = newCustomerWithAddress[0].addressList
+//                        emit(ApiResponse.Success(newLocalAddresses))
+//                    }
+//                }
             }
         }
     }
@@ -100,7 +130,7 @@ class AddressRepositoryImpl @Inject constructor(
     private suspend fun FlowCollector<ApiResponse<List<AddressEntity>>>.getRemote(
         it: Long
     ) = try {
-        val response = api.getAllAddress(it)
+        val response = addressApi.getAllAddress(it)
         if (response.isSuccessful) {
             response.body()
         } else {
@@ -117,10 +147,10 @@ class AddressRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAddressById(id: Long): AddressEntity? {
-        return dao.getAddress(id)
+        return customerDao.getAddress(id)
     }
 
     override suspend fun getCurrentAddressId(producerId: Long): Long? {
-        return dao.getCurrentAddressId(producerId)
+        return customerDao.getCurrentAddressId(producerId)
     }
 }

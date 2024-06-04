@@ -30,7 +30,7 @@ class ProducerDetailViewModel @Inject constructor(
 
         producerId?.let { producerId ->
             if (producerId != -1L) {
-                getProducer(producerId)
+                getProducer(producerId, fetchFromRemote = true)
             }
         }
     }
@@ -69,6 +69,7 @@ class ProducerDetailViewModel @Inject constructor(
                         state = state.copy(
                             currentProducerId = it.data.producer.producerId,
                             producer = it.data.producer,
+                            resource = it.data.resource,
                             productsList = it.data.productList
                         )
                     }

@@ -16,8 +16,12 @@ interface AddressApi {
     @POST("/v1/api/users/address")
     suspend fun addAddress(@Body addressRequest: AddressRequest): Response<MessageResponse>
 
-    @PUT("/v1/api/users/address")
-    suspend fun updateAddress(@Body updateAddressRequest: UpdateAddressRequest): Response<MessageResponse>
+    @PUT("/v1/api/users/{userId}/address/{addressId}")
+    suspend fun updateAddress(
+        @Path("userId") userId: Long,
+        @Path("addressId") addressId: Long,
+        @Body updateAddressRequest: UpdateAddressRequest
+    ): Response<MessageResponse>
 
     @DELETE("/v1/api/users/address/{addressId}")
     suspend fun deleteAddress(@Path("addressId") id: Long): Response<MessageResponse>

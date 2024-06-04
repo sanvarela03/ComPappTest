@@ -14,23 +14,22 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface CustomerApi {
-    @GET("v1/api/customers/{userId}")
+    @GET("/v1/api/customers/{userId}")
     suspend fun getCustomer(@Path("userId") id: Long): Response<CustomerInfoResponse>
 
-    @GET("v1/api/customers/{userId}/orders")
+    @GET("/v1/api/customers/{userId}/orders")
     suspend fun getAllOrders(@Path("userId") id: Long): Response<List<OrderInfoResponse>>
 
-
-    @POST("v1/api/customers/orders/order")
+    @POST("/v1/api/customers/orders/order")
     suspend fun addOrder(@Body addOrderRequest: AddOrderRequest): Response<MessageResponse>
 
-    @GET("v1/api/customers/{customerId}/search-producers")
+    @GET("/v1/api/customers/{customerId}/search-producers")
     suspend fun searchProducers(
         @Path("customerId") customerId: Long,
         @Query("city") city: String = "BOG"
     ): Response<List<ProducerSearchResponse>>
 
-    @GET("v1/api/customers/{customerId}/search-producers/{producerId}")
+    @GET("/v1/api/customers/{customerId}/search-producers/{producerId}")
     suspend fun searchProducer(
         @Path("customerId") customerId: Long,
         @Path("producerId") producerId: Long

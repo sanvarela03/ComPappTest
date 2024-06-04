@@ -19,11 +19,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.compapptest.config.di.module.toCap
 import com.example.compapptest.ui.components.ProducerItem
 import com.example.compapptest.ui.events.ProducerDetailEvent
 import com.example.compapptest.ui.events.ProducerSearchEvent
@@ -38,6 +40,7 @@ fun ProducerDetailScreen(
 ) {
     val productList = viewModel.state.productsList
     val producer = viewModel.state.producer
+    val resource = viewModel.state.resource
     val swipeRefreshState = rememberSwipeRefreshState(
         isRefreshing = viewModel.state.isRefreshing
     )
@@ -50,17 +53,42 @@ fun ProducerDetailScreen(
     ) {
         Column(
             horizontalAlignment = Alignment.Start,
-            modifier = Modifier.fillMaxWidth().padding(10.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
         ) {
-            if (producer != null) {
-                Text(
-                    text = "${producer.name.replaceFirstChar { it.uppercase() }} ${producer.lastName.replaceFirstChar { it.uppercase() }}",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Right
-                )
+            if (producer != null && resource != null) {
+                Row {
+
+                    Text(
+                        text = "${producer.name.toCap()} ${producer.lastName.toCap()}",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Left,
+                        modifier = Modifier.weight(2f)
+                    )
+                    Text(
+                        text = "${resource.travelDistance} Km",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Right,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(text = producer.email)
+                Row {
+                    Text(
+                        text = producer.email,
+                        fontStyle = FontStyle.Italic
+                    )
+                    Text(
+                        text = String.format("%.1f min", resource.travelDuration / 60.0),
+                        fontWeight = FontWeight.Light,
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Right,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = producer.phone)
             }

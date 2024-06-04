@@ -22,8 +22,8 @@ import javax.inject.Singleton
 
 @Singleton
 class OrderRepositoryImpl @Inject constructor(
-    private val dao: CustomerDao,
-    private val api: CustomerApi,
+    private val customerDao: CustomerDao,
+    private val customerApi: CustomerApi,
     private val shoppingCartDao: ShoppingCartDao,
     private val tokenManager: TokenManager
 ) : OrderRepository {
@@ -34,7 +34,7 @@ class OrderRepositoryImpl @Inject constructor(
             val customerId = tokenManager.getUserId().first()
 
             customerId?.let { id ->
-                val localOrderAndStatus = dao.getOrderAndStatus()
+                val localOrderAndStatus = customerDao.getOrderAndStatus()
 
                 if (localOrderAndStatus != null) {
                     emit(ApiResponse.Success(localOrderAndStatus))
@@ -51,31 +51,31 @@ class OrderRepositoryImpl @Inject constructor(
                 val remote = getRemote(id)
 
                 remote?.let { orderInfoResponseList: List<OrderInfoResponse> ->
-                    dao.clearOrderEntity()
-                    dao.clearCustomerInfoEntity()
-                    dao.clearProducerInfoEntity()
-                    dao.clearTransporterInfoEntity()
-                    dao.clearPickupAddressEntity()
-                    dao.clearDeliveryAddressEntity()
-                    dao.clearStatusEntity()
+                    customerDao.clearOrderEntity()
+                    customerDao.clearCustomerInfoEntity()
+                    customerDao.clearProducerInfoEntity()
+                    customerDao.clearTransporterInfoEntity()
+                    customerDao.clearPickupAddressEntity()
+                    customerDao.clearDeliveryAddressEntity()
+                    customerDao.clearStatusEntity()
 
                     orderInfoResponseList.forEach {
-                        dao.insertOrder(it.toOrderEntity())
-                        dao.insertCustomerInfoEntity(it.toCustomerInfoEntity())
-                        dao.insertProducerInfoEntity(it.toProducerInfoEntity())
+                        customerDao.insertOrder(it.toOrderEntity())
+                        customerDao.insertCustomerInfoEntity(it.toCustomerInfoEntity())
+                        customerDao.insertProducerInfoEntity(it.toProducerInfoEntity())
                         if (it.transporterContactInfoResponse!!.transporterId != null) {
-                            dao.insertTransporterInfoEntity(it.toTransporterInfoEntity())
+                            customerDao.insertTransporterInfoEntity(it.toTransporterInfoEntity())
                         }
-                        dao.insertPickupAddress(it.toPickupAddressEntity())
-                        dao.insertDeliveryAddress(it.toDeliveryAddressEntity())
+                        customerDao.insertPickupAddress(it.toPickupAddressEntity())
+                        customerDao.insertDeliveryAddress(it.toDeliveryAddressEntity())
 
                         it.statusList.forEach { statusResponse ->
-                            dao.insertStatus(statusResponse.toStatusEntity())
+                            customerDao.insertStatus(statusResponse.toStatusEntity())
                         }
                     }
                 }
 
-                val newOrderAndStatus = dao.getOrderAndStatus()
+                val newOrderAndStatus = customerDao.getOrderAndStatus()
 
                 newOrderAndStatus?.let {
                     emit(ApiResponse.Success(newOrderAndStatus))
@@ -86,14 +86,14 @@ class OrderRepositoryImpl @Inject constructor(
     override suspend fun addOrder(addOrderRequest: AddOrderRequest): Flow<ApiResponse<MessageResponse>> {
         return apiRequestFlow {
             shoppingCartDao.clearShoppingCartEntity(producerId = addOrderRequest.producerId)
-            api.addOrder(addOrderRequest)
+            customerApi.addOrder(addOrderRequest)
         }
     }
 
     private suspend fun FlowCollector<ApiResponse<List<OrderAndStatus>>>.getRemote(
         id: Long
     ) = try {
-        val response = api.getAllOrders(id)
+        val response = customerApi.getAllOrders(id)
         if (response.isSuccessful) {
             response.body()
         } else {

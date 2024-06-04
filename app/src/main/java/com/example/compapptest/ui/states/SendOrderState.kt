@@ -17,6 +17,8 @@ data class SendOrderState(
             producerId = producerAndShoppingCart!!.producer.producerId,
             deliveryAddressId = addressId,
             paymentMethod = paymentMethodId,
+            estimatedDistance = producerAndShoppingCart!!.resourceEntity.travelDistance,
+            estimatedTime = producerAndShoppingCart!!.resourceEntity.travelDuration,
             products = producerAndShoppingCart!!.shoppingItems.map { it.toItemRequest() },
         )
     }

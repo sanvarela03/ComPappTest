@@ -63,7 +63,8 @@ private fun HomeDrawer(
             listOf(
                 Screen.AddressListScreen.route,
                 Screen.OrderListScreen.route,
-                Screen.ProducerSearchScreen.route
+                Screen.ProducerSearchScreen.route,
+                Screen.ProducerDetailScreen.route
             )
         )
     }

@@ -2,7 +2,9 @@ package com.example.compapptest.config.di.module
 
 import android.app.Application
 import androidx.room.Room
+import com.example.compapptest.data.local.dao.AddressDao
 import com.example.compapptest.data.local.dao.CustomerDao
+import com.example.compapptest.data.local.dao.ResourceDao
 import com.example.compapptest.data.local.dao.ShoppingCartDao
 import com.example.compapptest.data.local.db.CustomerInfoDatabase
 import dagger.Module
@@ -35,6 +37,18 @@ class RoomModule {
     @Singleton
     fun provideShoppingCartDao(db: CustomerInfoDatabase): ShoppingCartDao {
         return db.shoppingCartDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddressDao(db: CustomerInfoDatabase): AddressDao {
+        return db.addressDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideResourceDao(db: CustomerInfoDatabase): ResourceDao {
+        return db.resourceDao
     }
 }
 

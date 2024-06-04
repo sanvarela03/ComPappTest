@@ -11,5 +11,5 @@ data class ProducerEntity(
     val lastName: String,
     val email: String,
     val phone: String,
-    val currentAddressId: Long
+    val currentAddressId: Long,
 )

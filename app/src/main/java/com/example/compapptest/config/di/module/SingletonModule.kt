@@ -23,6 +23,15 @@ import javax.inject.Singleton
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "data_store")
 
+fun String.toCap(): String {
+    val split = this.split(" ")
+    var s = ""
+    split.forEach {
+        s = s + " " + it.replaceFirstChar { it.uppercase() }
+    }
+    s = s.trim()
+    return s
+}
 
 @Module
 @InstallIn(SingletonComponent::class)

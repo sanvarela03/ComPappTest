@@ -24,9 +24,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.compapptest.config.di.module.toCap
 import com.example.compapptest.data.local.entities.AddressEntity
 import com.example.compapptest.data.local.entities.ProducerEntity
+import com.example.compapptest.data.local.entities.ResourceEntity
 import com.example.compapptest.data.local.entities.relations.ProducerAndAddress
+import com.example.compapptest.data.remote.payload.response.producer.Resource
 
 @Composable
 fun ProducerItem(
@@ -35,6 +38,11 @@ fun ProducerItem(
 ) {
     val producer: ProducerEntity = producerAndAddress.producer
     val address: AddressEntity? = producerAndAddress.currentAddress
+    val resource: ResourceEntity? = producerAndAddress.resource
+
+    val name = producer.name.toCap()
+    val lastName = producer.lastName.toCap()
+
     OutlinedCard(
         modifier = Modifier
             .wrapContentHeight()
@@ -46,7 +54,7 @@ fun ProducerItem(
             ) {
                 Text(
                     modifier = Modifier.weight(4f),
-                    text = "${producer.name.replaceFirstChar { it -> it.uppercase() }} ${producer.lastName.split(" ")[0].replaceFirstChar { it -> it.uppercase() }} ${producer.lastName.split(" ")[1].replaceFirstChar { it -> it.uppercase() }} ",
+                    text = "$name $lastName",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
@@ -65,7 +73,18 @@ fun ProducerItem(
             Text(text = producer.email)
             Spacer(modifier = Modifier.height(5.dp))
             Text(text = producer.phone)
-            if (address != null) {
+            if (address != null && resource != null) {
+                Row {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text =  String.format("%.2f min  ", resource.travelDuration / 60.0) + resource.travelDistance.toString() + " Km",
+                        textAlign = TextAlign.Right,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 7.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(5.dp))
                 Row {
 
                     Spacer(modifier = Modifier.weight(3f))

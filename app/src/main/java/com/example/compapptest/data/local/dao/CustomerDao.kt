@@ -48,6 +48,7 @@ interface CustomerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAddress(addressEntity: AddressEntity)
 
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDeliveryAddress(deliveryAddressEntity: DeliveryAddressEntity)
 

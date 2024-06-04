@@ -1,6 +1,8 @@
 package com.example.compapptest.config.di.module
 
+import com.example.compapptest.data.local.dao.AddressDao
 import com.example.compapptest.data.local.dao.CustomerDao
+import com.example.compapptest.data.local.dao.ResourceDao
 import com.example.compapptest.data.local.dao.ShoppingCartDao
 import com.example.compapptest.data.remote.api.AddressApi
 import com.example.compapptest.data.remote.api.AuthApi
@@ -52,29 +54,31 @@ class RepositoryModule {
     @Singleton
     fun provideAddressRepository(
         api: AddressApi,
-        dao: CustomerDao,
+        addressDao: AddressDao,
+        customerDao: CustomerDao,
         tokenManager: TokenManager
     ): AddressRepository {
         return AddressRepositoryImpl(
-            api,
-            dao,
-            tokenManager
+            addressApi = api,
+            addressDao = addressDao,
+            customerDao = customerDao,
+            tokenManager = tokenManager
         )
     }
 
     @Provides
     @Singleton
     fun provideOrderRepository(
-        dao: CustomerDao,
+        customerDao: CustomerDao,
         shoppingCartDao: ShoppingCartDao,
-        api: CustomerApi,
+        customerApi: CustomerApi,
         tokenManager: TokenManager
     ): OrderRepository {
         return OrderRepositoryImpl(
-            dao,
-            api,
-            shoppingCartDao,
-            tokenManager
+            customerDao = customerDao,
+            customerApi = customerApi,
+            shoppingCartDao = shoppingCartDao,
+            tokenManager = tokenManager
         )
     }
 
@@ -84,12 +88,14 @@ class RepositoryModule {
     fun provideProducerRepository(
         dao: CustomerDao,
         api: CustomerApi,
+        resourceDao: ResourceDao,
         tokenManager: TokenManager
     ): ProducerRepository {
         return ProducerRepositoryImpl(
             tokenManager,
             api,
             dao,
+            resourceDao
         )
     }
 

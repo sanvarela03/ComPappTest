@@ -3,6 +3,7 @@ package com.example.compapptest.data.repository
 import android.util.Log
 import com.example.compapptest.config.common.ApiResponse
 import com.example.compapptest.data.local.dao.CustomerDao
+import com.example.compapptest.data.local.dao.ResourceDao
 import com.example.compapptest.data.local.entities.ProducerEntity
 import com.example.compapptest.data.local.entities.relations.ProducerAndAddress
 import com.example.compapptest.data.local.entities.relations.ProducerAndProducts
@@ -22,7 +23,8 @@ import javax.inject.Singleton
 class ProducerRepositoryImpl @Inject constructor(
     private val tokenManager: TokenManager,
     private val api: CustomerApi,
-    private val dao: CustomerDao
+    private val dao: CustomerDao,
+    private val resourceDao: ResourceDao
 ) : ProducerRepository {
     override suspend fun searchProducers(fetchFromRemote: Boolean): Flow<ApiResponse<List<ProducerAndAddress>>> =
         flow {
@@ -57,6 +59,7 @@ class ProducerRepositoryImpl @Inject constructor(
                     producerSearchResponseList.forEach {
                         dao.insertProducerEntity(it.toProducerEntity())
                         dao.insertAddress(it.currentAddress.toAddressEntity())
+                        resourceDao.insertResource(it.toResourceEntity())
                     }
 
                 }
